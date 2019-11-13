@@ -1,20 +1,6 @@
 import numpy as np
 import sys
 
-class newton:
-    
-    def newton(f,dfdx,x0,tol=1e-6,max_iters=1000):
-        diff = 1
-        index = 0
-        while diff >= tol:
-            delta_x = -f(x0)/dfdx(x0)
-            x = x0 + delta_x
-            diff = np.abs(x - x0)
-            x0 = x
-            if index == max_iters:
-                raise ValueError('Max iterations exceeded')
-        return x0
-    
 class Dof:
     
     def Dof(grid):
