@@ -1,9 +1,5 @@
-Units in hidden layers:80
-Total number of layers:6
-Number of hidden layers:4
-Input Layer = 10 nodes
-L2: input = 10 output = 80
-L3: input = 80 output = 80
-L4: input = 80 output = 80
-L5: input = 80 output = 80
-L6: input = 80 output = 1
+10
+10
+10
+10
+1

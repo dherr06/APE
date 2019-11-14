@@ -36,7 +36,7 @@ class APE:
             model.compile(optimizer=sgd_optimizer,loss=e_insensitive(tolerance))
         return model
     
-    def train(self,grid,epochs,model_type,batch_size=100,loud=0,loss_tolerance=0.0009):
+    def train(self,grid,epochs,model_type,batch_size=1000,loud=0,loss_tolerance=0.001):
         if model_type == 'memory':
             weight_file = 'bananas/memory_best_weights.hdf5'
             struct_file = 'bananas/current_memory_model_structure.hdf5'
@@ -48,7 +48,7 @@ class APE:
         except OSError:
             pass
         model = APE.network_constructor(self,grid,loss_tolerance)
-        es = keras.callbacks.EarlyStopping(monitor='val_loss',mode='min',verbose=1,patience=100)
+        es = keras.callbacks.EarlyStopping(monitor='val_loss',mode='min',verbose=1,patience=2000)
         checkpoint = keras.callbacks.ModelCheckpoint(weight_file,monitor='val_loss',save_best_only=True)
         training_results = model.fit(self.feature_matrix,self.y,batch_size=batch_size,verbose=loud,callbacks=[checkpoint,es],validation_data=[self.val_x,self.val_y],epochs=epochs)
         file = open(struct_file,'w')
@@ -56,7 +56,7 @@ class APE:
             file.write(str(grid[element])+'\n')
         return training_results
     
-    def predict(self,feature_matrix,model_type,loss_tolerance=0.0009):
+    def predict(self,feature_matrix,model_type,loss_tolerance=0.001):
         if model_type == 'memory':
             weight_file = 'bananas/memory_best_weights.hdf5'
             struct_file = 'bananas/current_memory_model_structure.hdf5'
@@ -83,28 +83,25 @@ class APE:
     
     def arch_optimizer(self):
         df = pd.DataFrame()
-        #define an upperbound function and its derivative
-        f = lambda l: self.dim_input**l - self.num_training_points
-        #use newton to find number of layers that minimizes f
-        l = fsolve(f,3)[0]
-        #round down becuase f is an upper bound for the size of the training set
-        l = int(np.floor(l))
-        assert l >= 2
-        for layers in range(l,1,-1):
-            grid = np.ones(layers+1)
-            grid[0] = self.dim_input
-            index = 1
-            for i in range(grid.shape[0]-2,0,-1):
-                grid[i] = self.dim_input - index
-                index += 1
-            grid[-1] = 1
-            DOF = Dof.Dof(grid)
-            iter_layer = grid[1]
-            while iter_layer >= 2:
-                val_loss = APE.train(self,grid,1000,'time',loud=1).history['val_loss']
-                data = {'grid struct':grid,'val loss':np.min(val_loss)}
-                df2 = pd.DataFrame(data = data,columns=['grid struct','val loss'])
-                df.append(df2,ignore_index=True)
-                iter_layer = grid[1] - 1
-                assert DOF*self.dim_input <= self.num_training_points
+        grid = np.array([self.dim_input,1,1,1,1])
+        history = APE.train(self,grid,10000,'time',loud=0)
+        data = {'history':[history], 'grid_struct':[grid.copy()]}
+        df2 = pd.DataFrame(data = data)
+        df = df.append(df2,ignore_index=True)
+        for i in range(self.dim_input-1):
+            grid[1] += 1
+            history = APE.train(self,grid,10000,'time',loud=0)
+            data = {'history':[history], 'grid_struct':[grid.copy()]}
+            df2 = pd.DataFrame(data = data)
+            df = df.append(df2,ignore_index=True)
+            grid[2] += 1
+            history = APE.train(self,grid,10000,'time',loud=0)
+            data = {'history':[history], 'grid_struct':[grid.copy()]}
+            df2 = pd.DataFrame(data = data)
+            df = df.append(df2,ignore_index=True)
+            grid[3] += 1
+            history = APE.train(self,grid,10000,'time',loud=0)
+            data = {'history':[history], 'grid_struct':[grid.copy()]}
+            df2 = pd.DataFrame(data = data)
+            df = df.append(df2,ignore_index=True)
         return df
