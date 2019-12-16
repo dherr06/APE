@@ -82,6 +82,7 @@ class APE:
         return output_activations
     
     def arch_optimizer(self,max_layer=1,max_neurons=1):
+        df = pd.DataFrame()
         grid = np.array([10,1,1])
         #while we havent hit the max number of hidden layers, keep doing the analysis
         while grid.shape[0] <= max_layer+2:
