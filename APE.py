@@ -50,7 +50,7 @@ class APE:
             pass
         model = APE.network_constructor(self,grid,loss_tolerance)
         if np.size(self.val_x) > 0:
-            es = keras.callbacks.EarlyStopping(monitor='loss',mode='min',verbose=1,patience=200000)
+            es = keras.callbacks.EarlyStopping(monitor='loss',mode='min',verbose=1,patience=1000000)
             checkpoint=keras.callbacks.ModelCheckpoint(weight_file,monitor='loss',save_best_only=True)
             training_results = model.fit(self.feature_matrix,self.y,batch_size=batch_size,verbose=loud,callbacks=[checkpoint,es],validation_data=[self.val_x,self.val_y],epochs=epochs)
         else:
