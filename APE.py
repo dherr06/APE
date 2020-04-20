@@ -27,7 +27,7 @@ class APE:
                 return_value = K.maximum(0.0,tf.subtract(K.abs(y_true - y_pred),tolerance))
                 return return_value
             return loss
-        sgd_optimizer = keras.optimizers.Adam(lr=0.01)
+        sgd_optimizer = keras.optimizers.Adam(lr=0.001)
         model.add(keras.layers.Dense(units=grid[1],input_dim=self.dim_input,kernel_initializer='glorot_normal',bias_initializer=keras.initializers.Constant(0.0),activation=self.hidden_activation))
         for i in range(grid.shape[0]-3):
             model.add(keras.layers.Dense(units=grid[i+2],input_dim=grid[i+1],kernel_initializer='glorot_normal',bias_initializer=keras.initializers.Constant(0.0),activation=self.hidden_activation))
@@ -54,9 +54,9 @@ class APE:
             checkpoint=keras.callbacks.ModelCheckpoint(weight_file,monitor='loss',save_best_only=True)
             training_results = model.fit(self.feature_matrix,self.y,batch_size=batch_size,verbose=loud,callbacks=[checkpoint,es],validation_data=[self.val_x,self.val_y],epochs=epochs)
         else:
-            es = keras.callbacks.EarlyStopping(monitor='loss',mode='min',verbose=1,patience=100000)
+            es = keras.callbacks.EarlyStopping(monitor='loss',mode='min',verbose=1,patience=1000000)
             checkpoint = keras.callbacks.ModelCheckpoint(weight_file,monitor='loss',save_best_only=True)
-            training_results = model.fit(self.feature_matrix,self.y,batch_size=batch_size,verbose=loud,callbacks=[checkpoint,es],epochs=epochs)
+            training_results = model.fit(self.feature_matrix,self.y,batch_size=batch_size,verbose=loud,callbacks=[checkpoint,es],epochs=epochs,validation_split=0.1)
         file = open(struct_file,'w')
         for element in range(grid.shape[0]):
             file.write(str(grid[element])+'\n')
